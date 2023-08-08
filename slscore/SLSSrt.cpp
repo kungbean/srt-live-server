@@ -190,6 +190,7 @@ int CSLSSrt::libsrt_setup(int port)
 
     int enable = 0;
     int lossmaxttlvalue = 40;
+    char * passphrase = getenv("SLS_PASSPHRASE");
 
     srt_setsockopt(fd, SOL_SOCKET, SRTO_IPV6ONLY, &enable, sizeof(enable));
     srt_setsockopt(fd, SOL_SOCKET, SRTO_LOSSMAXTTL, &lossmaxttlvalue, sizeof(lossmaxttlvalue));
@@ -208,6 +209,10 @@ int CSLSSrt::libsrt_setup(int port)
     if (s->reuse) {
         if (srt_setsockopt(fd, SOL_SOCKET, SRTO_REUSEADDR, &s->reuse, sizeof(s->reuse)))
             sls_log(SLS_LOG_WARNING, "[%p]CSLSSrt::libsrt_setup, setsockopt(SRTO_REUSEADDR) failed.", this);
+    }
+    if (passphrase) {
+        std::string passphrase_str(passphrase);
+        srt_setsockopt(fd, 0, SRTO_PASSPHRASE, passphrase_str.c_str(), (int) passphrase_str.size());
     }
 
     ret = srt_bind(fd, ai->ai_addr, ai->ai_addrlen);
